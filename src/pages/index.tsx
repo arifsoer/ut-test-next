@@ -10,13 +10,25 @@ import {
   Select,
   MenuItem,
   CircularProgress,
+  IconButton,
+  FormControl,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  LinearProgress,
 } from "@mui/material";
 import { GridColDef, DataGrid } from "@mui/x-data-grid";
 import { TParticipant } from "@/types/data.type";
+import { DatePicker } from "@mui/x-date-pickers";
+import { EditOutlined, DeleteOutline } from "@mui/icons-material";
 import {
   useGetParticipantsQuery,
   useAddParticipantMutation,
+  useUpdateParticipantMutation,
+  useDeleteParticipantMutation,
 } from "@/redux/services/participants";
+import dayjs, { Dayjs } from "dayjs";
 
 type TFormState = Omit<TParticipant, "id">;
 
@@ -25,24 +37,60 @@ export default function Home() {
     name: "",
     email: "",
     gender: "Male",
-    phoneNumber: "",
-    city: "",
+    dateOfBirth: dayjs().format("YYYY-MM-DD"),
   });
 
-  const { data, isLoading } = useGetParticipantsQuery();
+  const [editId, setEditId] = useState("");
+  const [deleteId, setDeletetId] = useState("");
+
+  const { data, isLoading: isGetDataLoading } = useGetParticipantsQuery();
 
   const [addParticipant, { isLoading: isAddLoading }] =
     useAddParticipantMutation();
+  const [updateParticipant, { isLoading: isUpdateEditing }] =
+    useUpdateParticipantMutation();
+  const [deleteParticipant, { isLoading: isDeleteLoading }] =
+    useDeleteParticipantMutation();
 
   const updateFormData = (newVales: Partial<TFormState>) =>
     setFormData((prev) => ({ ...prev, ...newVales }));
 
-  const columns: GridColDef[] = [
-    { field: "name", headerName: "Name", width: 200 },
-    { field: "gender", headerName: "Gender", width: 150 },
-    { field: "email", headerName: "Email", width: 250 },
-    { field: "phoneNumber", headerName: "Phone Number", width: 150 },
-    { field: "city", headerName: "City", width: 150 },
+  const columns: GridColDef<TParticipant>[] = [
+    { field: "name", headerName: "Name", flex: 1 },
+    { field: "gender", headerName: "Gender", flex: 1 },
+    { field: "dateOfBirth", headerName: "Date of Birth", flex: 1 },
+    { field: "email", headerName: "Email", flex: 1 },
+    {
+      headerName: "Action",
+      width: 100,
+      field: "id",
+      renderCell: (param) => {
+        const { row } = param;
+        return (
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+              height: "100%",
+            }}
+          >
+            <IconButton
+              onClick={() => {
+                const { id, ...other } = row;
+                setEditId(id);
+                updateFormData(other);
+              }}
+            >
+              <EditOutlined />
+            </IconButton>
+            <IconButton onClick={() => setDeletetId(row.id)}>
+              <DeleteOutline />
+            </IconButton>
+          </Box>
+        );
+      },
+    },
   ];
 
   const clearForm = () =>
@@ -50,8 +98,7 @@ export default function Home() {
       name: "",
       email: "",
       gender: "Male",
-      phoneNumber: "",
-      city: "",
+      dateOfBirth: dayjs().format("YYYY-MM-DD"),
     });
 
   const onSubmitHandler = () => {
@@ -62,6 +109,19 @@ export default function Home() {
       });
   };
 
+  const onUpdateDataHandler = () => {
+    updateParticipant({ ...formData, id: editId })
+      .unwrap()
+      .then(() => clearForm());
+  };
+
+  const onDeleteHandler = () => deleteParticipant({ id: deleteId });
+
+  const dayJsDob = dayjs(formData.dateOfBirth);
+
+  const isLoading =
+    isAddLoading || isUpdateEditing || isGetDataLoading || isDeleteLoading;
+
   return (
     <>
       <Head>
@@ -70,6 +130,39 @@ export default function Home() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
+
+      {isLoading ? (
+        <LinearProgress sx={{ height: "5px" }} />
+      ) : (
+        <Box sx={{ width: "100%", height: "5px" }} />
+      )}
+
+      <Dialog open={deleteId !== ""} onClose={() => setDeletetId("")}>
+        <DialogTitle>Delete Confirmation</DialogTitle>
+        <DialogContent>Are you sure delete the data?</DialogContent>
+        <DialogActions>
+          <Button
+            type="button"
+            variant="outlined"
+            color="secondary"
+            onClick={() => setDeletetId("")}
+          >
+            Cancel
+          </Button>
+          <Button
+            type="button"
+            variant="contained"
+            color="primary"
+            onClick={() => {
+              setDeletetId("");
+              onDeleteHandler();
+            }}
+          >
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+
       <Container
         maxWidth="xl"
         sx={{
@@ -81,7 +174,7 @@ export default function Home() {
           gap: 2,
         }}
       >
-        <Box height="100%" width="100%" sx={{ maxWidth: "50%" }}>
+        <Box height="100%" width="100%" sx={{ maxWidth: "30%" }}>
           <Typography variant="h4" component="h1" gutterBottom paddingTop={5}>
             Participant Data Form
           </Typography>
@@ -89,7 +182,11 @@ export default function Home() {
             <form
               onSubmit={(e) => {
                 e.preventDefault();
-                onSubmitHandler();
+                if (editId) {
+                  onUpdateDataHandler();
+                } else {
+                  onSubmitHandler();
+                }
               }}
             >
               <TextField
@@ -114,6 +211,20 @@ export default function Home() {
                   <MenuItem value="Female">Female</MenuItem>
                 </Select>
               </Box>
+              <Box marginTop={1}>
+                <FormControl>
+                  <DatePicker
+                    label="Date of Birth"
+                    value={dayJsDob}
+                    onChange={(newDate) => {
+                      updateFormData({
+                        dateOfBirth: newDate?.format("YYYY-MM-DD"),
+                      });
+                    }}
+                    format="DD-MM-YYYY"
+                  />
+                </FormControl>
+              </Box>
               <TextField
                 label="Email"
                 type="email"
@@ -123,27 +234,6 @@ export default function Home() {
                 required
                 value={formData.email}
                 onChange={(e) => updateFormData({ email: e.target.value })}
-              />
-              <TextField
-                label="Phone Number"
-                type="tel"
-                variant="outlined"
-                fullWidth
-                margin="normal"
-                onChange={(e) =>
-                  updateFormData({ phoneNumber: e.target.value })
-                }
-                value={formData.phoneNumber}
-                required
-              />
-              <TextField
-                label="City"
-                variant="outlined"
-                fullWidth
-                margin="normal"
-                onChange={(e) => updateFormData({ city: e.target.value })}
-                required
-                value={formData.city}
               />
               <ButtonGroup
                 sx={{
@@ -157,7 +247,7 @@ export default function Home() {
                   variant="contained"
                   color="primary"
                   sx={{ marginRight: 1 }}
-                  disabled={isAddLoading}
+                  disabled={isLoading}
                 >
                   Submit
                 </Button>
@@ -165,7 +255,7 @@ export default function Home() {
                   type="reset"
                   variant="outlined"
                   color="primary"
-                  disabled={isAddLoading}
+                  disabled={isLoading}
                 >
                   Reset
                 </Button>
@@ -176,9 +266,9 @@ export default function Home() {
         <Box
           height="100%"
           width="100%"
-          sx={{ maxWidth: "50%", paddingTop: 13.6, maxHeight: "100%" }}
+          sx={{ maxWidth: "70%", paddingTop: 13.6, maxHeight: "100%" }}
         >
-          {isLoading ? (
+          {isGetDataLoading ? (
             <Box
               sx={{
                 display: "flex",

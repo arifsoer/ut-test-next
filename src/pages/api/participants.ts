@@ -15,41 +15,36 @@ const storedDatas: {
       id: "E76C2AAF-0DAC-8E7C-AA92-BA7C96A25688",
       name: "Calista Rollins",
       gender: "Female",
-      phoneNumber: "(519) 936-4428",
       email: "ac.turpis@yahoo.couk",
-      city: "Istanbul",
+      dateOfBirth: "2000-06-10",
     },
     {
       id: "175D8728-A25E-D3AD-CFE9-6168053509ED",
       name: "Aimee Carlson",
       gender: "Female",
-      phoneNumber: "1-527-553-3971",
       email: "eget.dictum@icloud.com",
-      city: "Katsina",
+      dateOfBirth: "2001-06-10",
     },
     {
       id: "B39DDD67-0569-2C94-3B76-50098D1BE2F2",
       name: "Thor Heath",
       gender: "Male",
-      phoneNumber: "(258) 766-0840",
       email: "felis.orci@hotmail.edu",
-      city: "Forchtenstein",
+      dateOfBirth: "2001-05-10",
     },
     {
       id: "5F6ECAE8-AB85-D6A9-1BF2-A362919E9193",
       name: "Cathleen Sawyer",
       gender: "Female",
-      phoneNumber: "1-283-472-7114",
       email: "elementum.lorem@protonmail.couk",
-      city: "Patos",
+      dateOfBirth: "2002-04-10",
     },
     {
       id: "A14DC6DD-14E5-AC36-85F8-BF9641969130",
       name: "Unity Norton",
       gender: "Female",
-      phoneNumber: "(278) 794-4492",
       email: "consequat.purus.maecenas@yahoo.org",
-      city: "Bengkulu",
+      dateOfBirth: "2003-06-10",
     },
   ],
 };
@@ -74,8 +69,43 @@ export default function handler(
       status: 201,
       message: "Participant added successfully",
     });
+  } else if (req.method === "PATCH") {
+    const bodyPayload: TParticipant = req.body;
+    const idData = participants.findIndex((x) => x.id === bodyPayload.id);
+    if (idData > -1) {
+      participants[idData] = bodyPayload;
+
+      res.status(200).json({
+        success: true,
+        status: 200,
+        message: "Participant update successfully",
+      });
+    } else {
+      res.status(400).json({
+        success: true,
+        status: 400,
+        message: "Participant update failed, data not found",
+      });
+    }
+  } else if (req.method === "DELETE") {
+    const bodyPayload: TParticipant = req.body;
+    const idData = participants.findIndex((x) => x.id === bodyPayload.id);
+    if (idData > -1) {
+      participants.splice(idData, 1);
+      res.status(204).json({
+        success: true,
+        status: 204,
+        message: "Participant delete successfully",
+      });
+    } else {
+      res.status(400).json({
+        success: true,
+        status: 400,
+        message: "Participant update failed, data not found",
+      });
+    }
   } else {
-    res.setHeader("Allow", ["GET", "POST"]);
+    res.setHeader("Allow", ["GET", "POST", "PATCH", "DELETE"]);
     res.status(405).end(`Method ${req.method} Not Allowed`);
   }
 }

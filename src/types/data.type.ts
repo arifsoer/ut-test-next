@@ -2,9 +2,8 @@ export type TParticipant = {
   id: string;
   name: string;
   gender: "Male" | "Female";
+  dateOfBirth?: string;
   email: string;
-  phoneNumber?: string;
-  city?: string;
 };
 
 export type TParticipantList = TParticipant[];

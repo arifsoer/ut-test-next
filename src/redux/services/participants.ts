@@ -25,8 +25,34 @@ export const participantsApi = createApi({
       }),
       invalidatesTags: ["Participants"],
     }),
+    updateParticipant: builder.mutation<
+      TCommonResponse<undefined>,
+      TParticipant
+    >({
+      query: (newParticipant) => ({
+        url: "participants",
+        method: "PATCH",
+        body: newParticipant,
+      }),
+      invalidatesTags: ["Participants"],
+    }),
+    deleteParticipant: builder.mutation<
+      TCommonResponse<undefined>,
+      Pick<TParticipant, "id">
+    >({
+      query: (deletedParticipant) => ({
+        url: "participants",
+        method: "DELETE",
+        body: deletedParticipant,
+      }),
+      invalidatesTags: ["Participants"],
+    }),
   }),
 });
 
-export const { useGetParticipantsQuery, useAddParticipantMutation } =
-  participantsApi;
+export const {
+  useGetParticipantsQuery,
+  useAddParticipantMutation,
+  useUpdateParticipantMutation,
+  useDeleteParticipantMutation,
+} = participantsApi;
