@@ -4,49 +4,14 @@ import {
   TParticipant,
   TParticipantList,
 } from "@/types/data.type";
+import { sampleData } from "@/utils/test-helper";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { v4 as uuidv4 } from "uuid";
 
 const storedDatas: {
   participants: TParticipant[];
 } = {
-  participants: [
-    {
-      id: "E76C2AAF-0DAC-8E7C-AA92-BA7C96A25688",
-      name: "Calista Rollins",
-      gender: "Female",
-      email: "ac.turpis@yahoo.couk",
-      dateOfBirth: "2000-06-10",
-    },
-    {
-      id: "175D8728-A25E-D3AD-CFE9-6168053509ED",
-      name: "Aimee Carlson",
-      gender: "Female",
-      email: "eget.dictum@icloud.com",
-      dateOfBirth: "2001-06-10",
-    },
-    {
-      id: "B39DDD67-0569-2C94-3B76-50098D1BE2F2",
-      name: "Thor Heath",
-      gender: "Male",
-      email: "felis.orci@hotmail.edu",
-      dateOfBirth: "2001-05-10",
-    },
-    {
-      id: "5F6ECAE8-AB85-D6A9-1BF2-A362919E9193",
-      name: "Cathleen Sawyer",
-      gender: "Female",
-      email: "elementum.lorem@protonmail.couk",
-      dateOfBirth: "2002-04-10",
-    },
-    {
-      id: "A14DC6DD-14E5-AC36-85F8-BF9641969130",
-      name: "Unity Norton",
-      gender: "Female",
-      email: "consequat.purus.maecenas@yahoo.org",
-      dateOfBirth: "2003-06-10",
-    },
-  ],
+  participants: sampleData,
 };
 
 export default function handler(

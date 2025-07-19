@@ -82,10 +82,10 @@ export default function Home() {
                 updateFormData(other);
               }}
             >
-              <EditOutlined />
+              <EditOutlined data-testid="EditOutlined" />
             </IconButton>
             <IconButton onClick={() => setDeletetId(row.id)}>
-              <DeleteOutline />
+              <DeleteOutline data-testid="DeleteOutline" />
             </IconButton>
           </Box>
         );
@@ -121,6 +121,32 @@ export default function Home() {
 
   const isLoading =
     isAddLoading || isUpdateEditing || isGetDataLoading || isDeleteLoading;
+
+  const loadingContent = (
+    <Box
+      sx={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        paddingTop: 15,
+      }}
+      data-testid="CircularProgress"
+    >
+      <CircularProgress />
+    </Box>
+  );
+
+  const nonLoadingContent = () => {
+    if (data && data?.success) {
+      return <DataGrid columns={columns} rows={data?.data ?? []} />;
+    } else {
+      return <Typography textAlign="center">Data not Available</Typography>;
+    }
+  };
+
+  const contentBuilder = isGetDataLoading
+    ? loadingContent
+    : nonLoadingContent();
 
   return (
     <>
@@ -197,6 +223,7 @@ export default function Home() {
                 required
                 value={formData.name}
                 onChange={(e) => updateFormData({ name: e.target.value })}
+                slotProps={{ htmlInput: { "data-testid": "NameField" } }}
               />
               <Box marginTop={1}>
                 <Select
@@ -206,6 +233,7 @@ export default function Home() {
                   fullWidth
                   value={formData.gender}
                   onChange={(e) => updateFormData({ gender: e.target.value })}
+                  inputProps={{ "data-testid": "GenderSelect" }}
                 >
                   <MenuItem value="Male">Male</MenuItem>
                   <MenuItem value="Female">Female</MenuItem>
@@ -234,6 +262,7 @@ export default function Home() {
                 required
                 value={formData.email}
                 onChange={(e) => updateFormData({ email: e.target.value })}
+                slotProps={{ htmlInput: { "data-testid": "EmailField" } }}
               />
               <ButtonGroup
                 sx={{
@@ -268,20 +297,7 @@ export default function Home() {
           width="100%"
           sx={{ maxWidth: "70%", paddingTop: 13.6, maxHeight: "100%" }}
         >
-          {isGetDataLoading ? (
-            <Box
-              sx={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                paddingTop: 15,
-              }}
-            >
-              <CircularProgress />
-            </Box>
-          ) : (
-            <DataGrid columns={columns} rows={data?.data || []} />
-          )}
+          {contentBuilder}
         </Box>
       </Container>
     </>
