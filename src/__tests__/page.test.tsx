@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import Page from "@/pages/index";
 import { generateResponse, sampleData } from "@/utils/test-helper";
 import {
@@ -76,7 +76,7 @@ describe("to test the page", () => {
     expect(findText).toBeInTheDocument();
   });
 
-  test("simulate submit form", () => {
+  test("simulate submit form", async () => {
     const addMock = jest.fn(() => ({
       unwrap: jest.fn().mockResolvedValue({}),
     }));
@@ -102,10 +102,12 @@ describe("to test the page", () => {
 
     fireEvent.submit(submitBtn);
 
-    expect(addMock).toHaveBeenCalled();
+    await waitFor(() => {
+      expect(addMock).toHaveBeenCalled();
+    });
   });
 
-  test("to simulate edit data", () => {
+  test("to simulate edit data", async () => {
     const updateDataMock = jest.fn(() => ({
       unwrap: jest.fn().mockResolvedValue({}),
     }));
@@ -118,17 +120,24 @@ describe("to test the page", () => {
 
     const editIcons = screen.getAllByTestId("EditOutlined");
 
-    expect(editIcons[0]).toBeInTheDocument();
+    await waitFor(() => {
+      expect(editIcons[0]).toBeInTheDocument();
+    });
 
     fireEvent.click(editIcons[0]);
 
     const nameField = screen.getByTestId("NameField");
-    expect(nameField.getAttribute("value")).toBe(sampleData[0].name);
+
+    await waitFor(() => {
+      expect(nameField.getAttribute("value")).toBe(sampleData[0].name);
+    });
 
     const submitBtn = screen.getByText("Submit");
     fireEvent.submit(submitBtn);
 
-    expect(updateDataMock).toHaveBeenCalled();
+    await waitFor(() => {
+      expect(updateDataMock).toHaveBeenCalled();
+    });
   });
 
   test("to simulate delete data", () => {
